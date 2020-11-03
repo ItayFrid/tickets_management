@@ -3,29 +3,21 @@
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-$app->add(function ($req, $res, $next) {
-    $response = $next($req, $res);
-    return $response
-            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', '*');
-});
-
 $app->group('/tickets', function () {
-    $this->get('',function(Request $req,Response $res,array $args) : Response {
-        return getAllTickets($req,$res);
+    $this->get('', function(Request $req, Response $res, array $args) : Response {
+        return getAllTickets($req, $res);
     });
-    $this->get('/{user_id}',function(Request $req,Response $res,array $args) : Response {
-        return getAllUserTickets($req,$res,$args['user_id']);
+    $this->get('/{user_id}', function(Request $req, Response $res, array $args) : Response {
+        return getAllUserTickets($req, $res, $args['user_id']);
     });
-    $this->post('/add',function(Request $req,Response $res,array $args) : Response {
-        return postTicket($req,$res);
+    $this->post('/add', function(Request $req, Response $res, array $args) : Response {
+        return postTicket($req, $res);
     });
-    $this->put('/update/{ticket_id}',function(Request $req,Response $res,array $args) : Response {
-        return updateTicket($req,$res,$args['ticket_id']);
+    $this->put('/update/{ticket_id}', function(Request $req, Response $res, array $args) : Response {
+        return updateTicket($req, $res, $args['ticket_id']);
     });
-    $this->delete('/delete/{ticket_id}',function(Request $req,Response $res,array $args) : Response {
-        return deleteTicket($req,$res,$args['ticket_id']);
+    $this->delete('/delete/{ticket_id}', function(Request $req, Response $res, array $args) : Response {
+        return deleteTicket($req, $res, $args['ticket_id']);
     });
 });
 
@@ -37,22 +29,22 @@ $app->group('/tickets', function () {
  * @param Response $response
  * @return Response
  */
-function getAllTickets(Request $request,Response $response): Response {
-    $sql = "SELECT tickets.ticket_id,tickets.user_id, categories.name,tickets.title, tickets.body, tickets.created_at , tickets.status 
+function getAllTickets(Request $request, Response $response): Response {
+    // Fix to 2 queries
+    $sql = "SELECT tickets.ticket_id, tickets.user_id,  categories.name, tickets.title,  tickets.body,  tickets.created_at, tickets.status 
     FROM tickets
     LEFT JOIN categories ON tickets.category_id = categories.category_id";
 
     try {
         $db = new db();
         $db = $db->connect();
-
         $stmt = $db->query($sql);
         $tickets = $stmt->fetchAll(PDO::FETCH_OBJ);
         $db = null;
-        return $response->withJson($tickets);
     } catch(PDOException $e) {
         return $response->withJson(['error' => e.getMessage()]);
     }
+    return $response->withJson($tickets);
 }
 
 /**
@@ -62,9 +54,10 @@ function getAllTickets(Request $request,Response $response): Response {
  * @param int $user_id
  * @return Response
  */
-function getAllUserTickets(Request $request,Response $response,$user_id): Response {
-    $user_id = $request->getAttribute('user_id');
-    $sql ="SELECT tickets.ticket_id,tickets.user_id, categories.name,tickets.title, tickets.body, tickets.created_at , tickets.status 
+function getAllUserTickets(Request $request, Response $response, $user_id): Response {
+    $user_id = intval($request->getAttribute('user_id'));
+    // Fix to 2 queries
+    $sql ="SELECT tickets.ticket_id, tickets.user_id, categories.name, tickets.title, tickets.body, tickets.created_at, tickets.status 
             FROM tickets
             LEFT JOIN categories ON tickets.category_id = categories.category_id
             WHERE tickets.user_id = '$user_id'";
@@ -72,14 +65,13 @@ function getAllUserTickets(Request $request,Response $response,$user_id): Respon
     try {
         $db = new db();
         $db = $db->connect();
-
         $stmt = $db->query($sql);
         $tickets = $stmt->fetchAll(PDO::FETCH_OBJ);
         $db = null;
-        return $response->withJson($tickets);
     } catch(PDOException $e) {
         return $response->withJson(['error' => e.getMessage()]);
     }
+    return $response->withJson($tickets);
 }
 
 /**
@@ -88,7 +80,7 @@ function getAllUserTickets(Request $request,Response $response,$user_id): Respon
  * @param Response $response
  * @return Response
  */
-function postTicket(Request $request,Response $response) : Response {
+function postTicket(Request $request, Response $response) : Response {
     $request->getParsedBody();
     $data = $request->getParsedBody();
     $user_id = $data['user_id'];
@@ -97,28 +89,26 @@ function postTicket(Request $request,Response $response) : Response {
     $body = $data['body'];
     $status = $data['status'];
     $sql = "INSERT INTO tickets ( user_id, category_id, title, body, status) 
-            VALUES (?,?,?,?,?)";
+            VALUES (?, ?, ?, ?, ?)";
 
     try{
         $db = new db();
         $db = $db->connect();
 
         $stmt = $db->prepare($sql);
-        $stmt->execute([$user_id,$category_id,$title,$body,$status]);
-
+        $stmt->execute([$user_id, $category_id, $title, $body, $status]);
         // Get Ticket ID
         $ticket_id = $db->lastInsertId();
-
         // Get Ticket Date
         $sql = "SELECT created_at FROM tickets WHERE ticket_id = $ticket_id";
         $stmt = $db->query($sql);
         $created_at = $stmt->fetchAll(PDO::FETCH_OBJ);
         $created_at = json_decode(json_encode($created_at[0]), true)["created_at"];
         $db = null;
-        return $response->withJson(["text" => "new Ticket Added","ticket_id" => $ticket_id, "created_at" =>$created_at]);
     } catch(PDOException $e){
         return $response->withJson(['error' => e.getMessage()]);
     }
+    return $response->withJson(["text" => "new Ticket Added", "ticket_id" => $ticket_id, "created_at" => $created_at]);
 }
 
 /**
@@ -128,7 +118,7 @@ function postTicket(Request $request,Response $response) : Response {
  * @param int $ticket_id
  * @return Response
  */
-function updateTicket(Request $request,Response $response,$ticket_id) : Response {
+function updateTicket(Request $request, Response $response, $ticket_id) : Response {
     $data = $request->getParsedBody();
     $title = $data['title'];
     $body = $data['body'];
@@ -138,15 +128,13 @@ function updateTicket(Request $request,Response $response,$ticket_id) : Response
     try{
         $db = new db();
         $db = $db->connect();
-
         $stmt = $db->prepare($sql);
-        $stmt->execute([$title,$body,$status,$ticket_id]);
+        $stmt->execute([$title, $body, $status, $ticket_id]);
         $db = null;
-
-        return $response->withJson(["text" => "Ticket updated","ticket_id" => $ticket_id]);
     } catch(PDOException $e){
         return $response->withJson(['error' => e.getMessage()]);
     }
+    return $response->withJson(["text" => "Ticket updated", "ticket_id" => $ticket_id]);
 }
 
 /**
@@ -161,13 +149,11 @@ function deleteTicket(Request $request, Response $response, $ticket_id) : Respon
     try{
         $db = new db();
         $db = $db->connect();
-
         $stmt = $db->prepare($sql);
         $stmt->execute([$ticket_id]);
         $db = null;
-
-        return $response->withJson(["text" => "Ticket Deleted", "ticket_id" => $ticket_id]);
     } catch(PDOException $e){
         return $response->withJson(['error' => e.getMessage()]);
     }
+    return $response->withJson(["text" => "Ticket Deleted", "ticket_id" => $ticket_id]);
 }

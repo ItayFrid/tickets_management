@@ -4,17 +4,17 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 $app->group('/categories', function () {
-    $this->get('',function(Request $req,Response $res,array $args) : Response {
-        return getAllCategories($req,$res);
+    $this->get('', function(Request $req, Response $res, array $args) : Response {
+        return getAllCategories($req, $res);
     });
-    $this->post('/add',function(Request $req,Response $res,array $args) : Response {
-        return postCategory($req,$res);
+    $this->post('/add', function(Request $req, Response $res, array $args) : Response {
+        return postCategory($req, $res);
     });
-    $this->put('/update/{category_id}',function(Request $req,Response $res,array $args) : Response {
-        return updateCategory($req,$res,$args['category_id']);
+    $this->put('/update/{category_id}', function(Request $req, Response $res, array $args) : Response {
+        return updateCategory($req, $res, $args['category_id']);
     });
-    $this->delete('/delete/{category_id}',function(Request $req,Response $res,array $args) : Response {
-        return deleteCategory($req,$res,$args['category_id']);
+    $this->delete('/delete/{category_id}', function(Request $req, Response $res, array $args) : Response {
+        return deleteCategory($req, $res, $args['category_id']);
     });
 });
 
@@ -24,8 +24,8 @@ $app->group('/categories', function () {
  * @param Response $response
  * @return Response
  */
-function getAllCategories(Request $request,Response $response) : Response {
-    $sql = "SELECT * FROM categories";
+function getAllCategories(Request $request, Response $response) : Response {
+    $sql = "SELECT category_id, name FROM categories";
     try {
         $db = new db();
         $db = $db->connect();
@@ -46,9 +46,9 @@ function getAllCategories(Request $request,Response $response) : Response {
  * @param Response $response
  * @return Response
  */
-function postCategory(Request $request,Response $response) : Response {
+function postCategory(Request $request, Response $response) : Response {
     $data = $request->getParsedBody();
-    $name = $data['name'];
+    $name = strval($data['name'] ?? "" );
     $sql = "INSERT INTO categories (name) VALUES (?)";
 
     try{
@@ -74,16 +74,16 @@ function postCategory(Request $request,Response $response) : Response {
  * @param int $category_id
  * @return Response
  */
-function updateCategory(Request $request,Response $response, $category_id) : Response {
+function updateCategory(Request $request, Response $response, $category_id) : Response {
     $data = $request->getParsedBody();
-    $name = $data['name'];
+    $name = strval($data['name'] ?? "");
     $sql = "UPDATE categories SET name = ?  WHERE category_id = ?";
 
     try{
         $db = new db();
         $db = $db->connect();
         $stmt = $db->prepare($sql);
-        $stmt->execute([$name,$category_id]);
+        $stmt->execute([$name, $category_id]);
         $db = null;
 
         return $response->withJson(["text" => "Category Updated", "category_id" => $category_id]);
@@ -99,7 +99,8 @@ function updateCategory(Request $request,Response $response, $category_id) : Res
  * @param int $category_id
  * @return Response
  */
-function deleteCategory(Request $request,Response $response, $category_id) : Response {
+function deleteCategory(Request $request, Response $response, $category_id) : Response {
+    
     $sql = "DELETE FROM categories WHERE category_id = ?";
 
     try{

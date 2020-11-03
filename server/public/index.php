@@ -6,6 +6,14 @@ require '../vendor/autoload.php';
 require '../src/config/db.php';
 $app = new \Slim\App;
 
+$app->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', '*');
+});
+
 // Routes
 require '../src/routes/tickets.php';
 require '../src/routes/users.php';
