@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faKey, faIdCard } from "@fortawesome/free-solid-svg-icons";
 import AuthContext from "../context/auth";
@@ -84,118 +85,122 @@ export default class Register extends Component {
 
   render() {
     const { user, errors, message, usernameMessage } = this.state;
-    return (
-      <div className="container">
-        <h1 className="display-3">Register</h1>
-        <hr />
+    const { userDetails } = this.props;
+    if (userDetails.user_id) {
+      return <Redirect to="/" />;
+    } else
+      return (
         <div className="container">
-          <form onSubmit={this.handleSubmit}>
-            <div className="form-group row">
-              <label htmlFor="username" className="col-sm-1 col-form-label">
-                <FontAwesomeIcon icon={faUser} />
-              </label>
-              <div className="col-sm-5">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter Username"
-                  name="username"
-                  id="username"
-                  onChange={this.handleChange}
-                  value={user.username}
-                />
-                {errors.username && (
-                  <div className="text-danger">{errors.username}</div>
-                )}
-                {errors.userExists && (
-                  <div className="text-danger">{errors.username}</div>
-                )}
+          <h1 className="display-3">Register</h1>
+          <hr />
+          <div className="container">
+            <form onSubmit={this.handleSubmit}>
+              <div className="form-group row">
+                <label htmlFor="username" className="col-sm-1 col-form-label">
+                  <FontAwesomeIcon icon={faUser} />
+                </label>
+                <div className="col-sm-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Username"
+                    name="username"
+                    id="username"
+                    onChange={this.handleChange}
+                    value={user.username}
+                  />
+                  {errors.username && (
+                    <div className="text-danger">{errors.username}</div>
+                  )}
+                  {errors.userExists && (
+                    <div className="text-danger">{errors.username}</div>
+                  )}
+                </div>
+                <div className="col-sm-6">
+                  <button
+                    className="btn btn-sm btn-outline-info"
+                    onClick={this.checkUsername}
+                  >
+                    Check Username
+                  </button>{" "}
+                  {usernameMessage}
+                </div>
               </div>
-              <div className="col-sm-6">
-                <button
-                  className="btn btn-sm btn-outline-info"
-                  onClick={this.checkUsername}
+              <div className="form-group row">
+                <label htmlFor="password" className="col-sm-1 col-form-label">
+                  <FontAwesomeIcon icon={faKey} />
+                </label>
+                <div className="col-sm-5">
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Enter Password"
+                    name="password"
+                    id="password"
+                    onChange={this.handleChange}
+                    value={user.password}
+                  />
+                  {errors.password && (
+                    <div className="text-danger">{errors.password}</div>
+                  )}
+                </div>
+              </div>
+              <div className="form-group row">
+                <label
+                  htmlFor="passwordValid"
+                  className="col-sm-1 col-form-label"
                 >
-                  Check Username
-                </button>{" "}
-                {usernameMessage}
+                  <FontAwesomeIcon icon={faKey} />
+                </label>
+                <div className="col-sm-5">
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Enter Again"
+                    name="passwordValid"
+                    id="passwordValid"
+                    onChange={this.handleChange}
+                    value={user.passwordValid}
+                  />
+                  {errors.passwordValid && (
+                    <div className="text-danger">{errors.passwordValid}</div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="form-group row">
-              <label htmlFor="password" className="col-sm-1 col-form-label">
-                <FontAwesomeIcon icon={faKey} />
-              </label>
-              <div className="col-sm-5">
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="Enter Password"
-                  name="password"
-                  id="password"
-                  onChange={this.handleChange}
-                  value={user.password}
-                />
-                {errors.password && (
-                  <div className="text-danger">{errors.password}</div>
-                )}
+              <div className="form-group row">
+                <label htmlFor="name" className="col-sm-1 col-form-label">
+                  <FontAwesomeIcon icon={faIdCard} />
+                </label>
+                <div className="col-sm-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Full Name"
+                    name="name"
+                    id="name"
+                    onChange={this.handleChange}
+                    value={user.name}
+                  />
+                  {errors.name && (
+                    <div className="text-danger">{errors.name}</div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="form-group row">
-              <label
-                htmlFor="passwordValid"
-                className="col-sm-1 col-form-label"
-              >
-                <FontAwesomeIcon icon={faKey} />
-              </label>
-              <div className="col-sm-5">
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="Enter Again"
-                  name="passwordValid"
-                  id="passwordValid"
-                  onChange={this.handleChange}
-                  value={user.passwordValid}
-                />
-                {errors.passwordValid && (
-                  <div className="text-danger">{errors.passwordValid}</div>
-                )}
+              <div className="form-group row">
+                <div className="col-sm-5 offset-sm-1">
+                  <input
+                    type="submit"
+                    value="Register"
+                    className="btn btn-outline-primary"
+                  />
+                  {message && (
+                    <div className="text-success text-center">{message}</div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="form-group row">
-              <label htmlFor="name" className="col-sm-1 col-form-label">
-                <FontAwesomeIcon icon={faIdCard} />
-              </label>
-              <div className="col-sm-5">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter Full Name"
-                  name="name"
-                  id="name"
-                  onChange={this.handleChange}
-                  value={user.name}
-                />
-                {errors.name && (
-                  <div className="text-danger">{errors.name}</div>
-                )}
-              </div>
-            </div>
-            <div className="form-group row">
-              <div className="col-sm-5 offset-sm-1">
-                <input
-                  type="submit"
-                  value="Register"
-                  className="btn btn-outline-primary"
-                />
-                {message && (
-                  <div className="text-success text-center">{message}</div>
-                )}
-              </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
-    );
+      );
   }
 }

@@ -1,12 +1,10 @@
 import React, { Component } from "react";
-import AuthContext from "../context/auth";
+import { Redirect } from "react-router-dom";
 import ticketStore from "../stores/ticketStore";
 import { getTickets } from "../actions/ticketAction";
 import TicketItem from "./TicketItem";
 
 export default class SupportPage extends Component {
-  static contextType = AuthContext;
-
   constructor(props) {
     super(props);
     this.state = {
@@ -28,18 +26,20 @@ export default class SupportPage extends Component {
   render() {
     const { tickets } = this.state;
     const { userDetails } = this.props;
-    return (
-      <div className="container">
-        <h1 className="display-3">Support</h1>
-        <hr />
-        {tickets.map((ticket) => (
-          <TicketItem
-            key={ticket.ticket_id}
-            ticket={ticket}
-            userDetails={userDetails}
-          />
-        ))}
-      </div>
-    );
+    if (userDetails.role !== "support") return <Redirect to="/" />;
+    else
+      return (
+        <div className="container">
+          <h1 className="display-3">Support</h1>
+          <hr />
+          {tickets.map((ticket) => (
+            <TicketItem
+              key={ticket.ticket_id}
+              ticket={ticket}
+              userDetails={userDetails}
+            />
+          ))}
+        </div>
+      );
   }
 }

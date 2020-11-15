@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import categoryStore from "../stores/categoryStore";
 import { getCategories, addCategory } from "../actions/categoryAction";
 import CategoryItem from "./CategoryItem";
@@ -49,28 +50,30 @@ export default class CategoriesPage extends Component {
 
   render() {
     const { categories, errors, category } = this.state;
-    return (
-      <div className="container">
-        <h1 className="display-3">Categories</h1>
-        <hr />
-        {categories.map((category) => (
-          <CategoryItem key={category.category_id} category={category} />
-        ))}
-        <form className="form-inline" onSubmit={this.handleSubmit}>
-          <input
-            type="text"
-            name="body"
-            placeholder="Enter Category"
-            value={category.name}
-            className="form-control"
-            onChange={this.handleChange}
-          />
-          <button type="submit" className={"btn btn-outline-info"}>
-            Add Category
-          </button>
-        </form>
-        {errors.name && <div className="text-danger">{errors.name}</div>}
-      </div>
-    );
+    if (this.props.userDetails.role !== "support") return <Redirect to="/" />;
+    else
+      return (
+        <div className="container">
+          <h1 className="display-3">Categories</h1>
+          <hr />
+          {categories.map((category) => (
+            <CategoryItem key={category.category_id} category={category} />
+          ))}
+          <form className="form-inline" onSubmit={this.handleSubmit}>
+            <input
+              type="text"
+              name="body"
+              placeholder="Enter Category"
+              value={category.name}
+              className="form-control"
+              onChange={this.handleChange}
+            />
+            <button type="submit" className={"btn btn-outline-info"}>
+              Add Category
+            </button>
+          </form>
+          {errors.name && <div className="text-danger">{errors.name}</div>}
+        </div>
+      );
   }
 }

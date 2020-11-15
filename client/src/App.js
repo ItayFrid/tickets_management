@@ -43,7 +43,10 @@ function App() {
             path="/"
             render={() => <Home userDetails={userDetails} />}
           />
-          <Route path="/register" component={Register} />
+          <Route
+            path="/register"
+            render={() => <Register userDetails={userDetails} />}
+          />
           <Route
             path="/login"
             render={() => <Login userDetails={userDetails} />}
