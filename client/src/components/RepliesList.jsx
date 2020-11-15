@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import Reply from "./Reply";
-import AuthContext from "../context/auth";
 import axios from "axios";
 
 export default class RepliesList extends Component {
-  static contextType = AuthContext;
   constructor(props) {
     super(props);
     this.state = {
@@ -47,9 +45,9 @@ export default class RepliesList extends Component {
     event.preventDefault();
     if (!this.formIsValid()) return;
     let reply = this.state.reply;
-    reply.type = this.context.authTokens.role;
-    reply.user_id = this.context.authTokens.user_id;
-    reply.username = this.context.authTokens.username;
+    reply.type = this.props.userDetails.role;
+    reply.user_id = this.props.userDetails.user_id;
+    reply.username = this.props.userDetails.username;
     axios.post("http://tickets/replies/add", reply).then((res) => {
       let replies = this.state.replies;
       reply.reply_id = res.data.reply_id;
@@ -59,9 +57,9 @@ export default class RepliesList extends Component {
         reply: {
           reply_id: null,
           ticket_id: this.props.ticket_id,
-          user_id: this.context.authTokens.user_id,
+          user_id: this.props.userDetails.user_id,
           body: "",
-          type: this.context.authTokens.role,
+          type: this.props.userDetails.role,
         },
       });
     });

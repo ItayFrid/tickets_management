@@ -19,5 +19,4 @@ require '../src/routes/tickets.php';
 require '../src/routes/users.php';
 require '../src/routes/categories.php';
 require '../src/routes/replies.php';
-require '../src/routes/auth.php';
 $app->run();

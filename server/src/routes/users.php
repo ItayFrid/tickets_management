@@ -9,11 +9,14 @@ $app->group('/users', function () {
     $this->get('', function(Request $req, Response $res, array $args) : Response {
         return getAllUsers($req, $res);
     });
-    $this->get('/details/{session_id}', function(Request $req, Response $res, array $args) : Response {
-        return getUserDetail($req, $res, $args['session_id']);
+    $this->post('/details', function(Request $req, Response $res, array $args) : Response {
+        return getUserDetail($req, $res);
     });
     $this->post('/login', function(Request $req, Response $res, array $args) : Response {
         return loginUser($req, $res);
+    })->add(new XssMiddleware());
+    $this->post('/logout', function(Request $req, Response $res, array $args) : Response {
+        return logoutUser($req, $res);
     })->add(new XssMiddleware());
     $this->post('/add', function(Request $req, Response $res, array $args) : Response {
         return postUser($req, $res);
@@ -55,10 +58,12 @@ function getAllUsers(Request $request, Response $response) : Response {
  * @param Response $response
  * @return Response
  */
-function getUserDetail(Request $request, Response $response, $session_id) : Response {
+function getUserDetail(Request $request, Response $response) : Response {
+    $data = $request->getParsedBody();
+    $session_id = strval($data['PHPSESSID'] ?? "");
     session_id($session_id);
     session_start();
-    if(isset($_SESSION)){
+    if(isset($_SESSION['user_id'])){
         $user = [
                 "user_id" => $_SESSION['user_id'],
                 "username" => $_SESSION['username'],
@@ -77,10 +82,11 @@ function getUserDetail(Request $request, Response $response, $session_id) : Resp
  * @return Response
  */
 function loginUser(Request $request, Response $response) : Response {
+    session_start();
     $data = $request->getParsedBody();
     $username = strval($data['username'] ?? "");
     $password = strval($data['password'] ?? "");
-    $sql = "SELECT username, password FROM users WHERE username='$username'";
+    $sql = "SELECT user_id, username, password, name, role FROM users WHERE username='$username'";
     
     try {
         $db = new db();
@@ -98,19 +104,14 @@ function loginUser(Request $request, Response $response) : Response {
     else {
         $user = json_decode(json_encode($user[0]), true);
         if($username === $user['username'] && $password === $user['password']){
-            // session_start();
-            // $_SESSION["user_id"] = $user['user_id'];
-            // $_SESSION["username"] = $user['username'];
-            // $_SESSION["name"] = $user['name'];
-            // $_SESSION["role"] = $user['role'];
+            $_SESSION["user_id"] = $user['user_id'];
+            $_SESSION["username"] = $user['username'];
+            $_SESSION["name"] = $user['name'];
+            $_SESSION["role"] = $user['role'];
             $newUser =[
-                "user_id"=>$user['user_id'],
-                "username"=>$user['username'],
-                "name"=>$user['name'],
-                "role"=>$user['role'],
+                "PHPSESSID" => session_id()
             ];
             return $response->withJson($newUser);
-            // return $response->withJson(["session_id" => session_id()]);
         }
         else
             return $response->withJson(['error' => 'username/password is wrong']);
@@ -225,4 +226,12 @@ function checkUsername(Request $request, Response $response, $username) : Respon
     } else {
         return $response->withJson(["text" => "username is available"]);
     }
+}
+function logoutUser(Request $request, Response $response): Response {
+    $data = $request->getParsedBody();
+    $session_id = strval($data['PHPSESSID'] ?? "");
+    session_id($session_id);
+    session_start();
+    session_destroy();
+    return $response->withJson(["text" => "logged out"]);
 }

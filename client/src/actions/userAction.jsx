@@ -53,11 +53,6 @@ export function delUser(user_id) {
   });
 }
 
-export function getUserDetails(session_id) {
-  axios.get(`users/details/${session_id}`).then((res) => {
-    dispatcher.dispatch({
-      type: actionTypes.GET_USER,
-      payload: res.data,
-    });
-  });
+export function getUserDetails(id) {
+  return axios.post(`users/details`, id);
 }

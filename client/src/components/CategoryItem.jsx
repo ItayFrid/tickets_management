@@ -1,6 +1,8 @@
-import React from "react";
+import React, { Component } from "react";
 
-export default function CategoryItem(props) {
-  const { category } = props;
-  return <div className="my-1">{category.name}</div>;
+export default class CategoryItem extends Component {
+  render() {
+    const { category } = this.props;
+    return <div className="my-1">{category.name}</div>;
+  }
 }

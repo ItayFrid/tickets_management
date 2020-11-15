@@ -1,17 +1,21 @@
-import React from "react";
-import { useAuth } from "../context/auth";
+import React, { Component } from "react";
+import AuthContext from "../context/auth";
 
-export default function Home() {
-  const { authTokens } = useAuth();
+export default class Home extends Component {
+  static contextType = AuthContext;
 
-  return (
-    <div className="container">
-      <h1 className="display-3">Home</h1>
-      <blockquote className="blockquote text-center">
-        <p className="mb-0">
-          {authTokens ? "Go to tickets page" : "Login/Register to continue."}
-        </p>
-      </blockquote>
-    </div>
-  );
+  render() {
+    return (
+      <div className="container">
+        <h1 className="display-3">Home</h1>
+        <blockquote className="blockquote text-center">
+          <p className="mb-0">
+            {this.props.userDetails
+              ? "Go to tickets page"
+              : "Login/Register to continue."}
+          </p>
+        </blockquote>
+      </div>
+    );
+  }
 }
