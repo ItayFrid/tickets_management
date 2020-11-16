@@ -4,6 +4,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 require '../vendor/autoload.php';
 require '../src/config/db.php';
+
 $app = new \Slim\App;
 
 $app->add(function ($req, $res, $next) {
@@ -19,4 +20,5 @@ require '../src/routes/tickets.php';
 require '../src/routes/users.php';
 require '../src/routes/categories.php';
 require '../src/routes/replies.php';
+require '../src/routes/routine.php';
 $app->run();

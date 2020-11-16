@@ -7,11 +7,12 @@ import axios from "axios";
  * @param {User} user
  */
 export function addUser(user) {
-  axios.post("users/add", user).then((res) => {
+  return axios.post("users/add", user).then((res) => {
     dispatcher.dispatch({
       type: actionTypes.ADD_USER,
       payload: user,
     });
+    return res.data;
   });
 }
 

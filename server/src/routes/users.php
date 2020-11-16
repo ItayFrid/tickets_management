@@ -72,7 +72,7 @@ function getUserDetail(Request $request, Response $response) : Response {
             ];
         return $response->withJson($user);
     }
-    return $response->withStatus(404)->withJson(["error" => "user details not found"]);
+    return $response->withJson(["error" => "user details not found"], 500);
 }
 
 /**
@@ -97,7 +97,6 @@ function loginUser(Request $request, Response $response) : Response {
     } catch(PDOException $e) {
         return $response->withJson(['error' => e.getMessage()]);
     }
-    // TODO change login to sessions
     if(count($user) === 0) {
         return $response->withJson(['error' => "Login Failed"]);
     }
@@ -141,13 +140,15 @@ function postUser(Request $request, Response $response) : Response {
         $username_stmt = $db->query($check_username);
         $user = $username_stmt->fetchAll(PDO::FETCH_OBJ);
         if(count($user) !== 0) {
-            return $response->withJson(["text" => "username is taken"]);
-        } else {
-            $stmt = $db->prepare($sql);
-            $stmt->execute([$username, $password, $name, $role]);
-            $db = null;
-            return $response->withJson(["text" => "New User Added"]);
+            return $response->withJson(["error" => ["username is taken"]]);
         }
+        if($errors = validateUser($username, $password, $name, $role)) {
+            return $response->withJson(["error" => $errors]);
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$username, $password, $name, $role]);
+        $db = null;
+        return $response->withJson(["text" => ["New User Added"]]);
     } catch(PDOException $e){
         return $response->withJson(['error' => e.getMessage()]);
     }
@@ -234,4 +235,22 @@ function logoutUser(Request $request, Response $response): Response {
     session_start();
     session_destroy();
     return $response->withJson(["text" => "logged out"]);
+}
+
+function validateUser($username, $password, $name, $role) : Array {
+    $errors = [];
+    if (!(strlen($username) >= 4 && strlen($username) <= 15 )) {
+        $errors[] = "username must be between 4 to 15 length.";
+    }
+    if (!(strlen($password) >= 6 && strlen($password) <= 20 )) {
+        $errors[] = "password must be between 6 to 20 length.";
+    }
+    if (!(strlen($name) >= 3 && strlen($name) <= 20 )) {
+        $errors[] = "name must be between 3 to 20 length.";
+    }
+    if (substr_count($name, ' ') != 1) {
+        $errors[] = "Name must contain 1 space only.";
+    }
+    if (preg_match("/^(?![\s.]+$)[a-zA-Z\s.]/"))
+    return $errors;
 }

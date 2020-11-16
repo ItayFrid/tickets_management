@@ -14,6 +14,8 @@ export default class Register extends Component {
     this.state = {
       errors: "",
       message: "",
+      counter: 0,
+      disabled: false,
       user: {
         username: "",
         password: "",
@@ -21,22 +23,21 @@ export default class Register extends Component {
         name: "",
         role: "user",
       },
-      usernameMessage: "",
     };
     this.checkUsername = this.checkUsername.bind(this);
     this.formIsValid = this.formIsValid.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.onUsernameChange = this.onUsernameChange.bind(this);
+    this.onPasswordChange = this.onPasswordChange.bind(this);
+    this.onPasswordValidateChange = this.onPasswordValidateChange.bind(this);
+    this.handleButton = this.handleButton.bind(this);
   }
 
   checkUsername() {
-    if (!this.state.user.username)
-      this.setState({
-        errors: { ...this.state.errors, username: "Username is required" },
-      });
-    else {
-      const url = "http://tickets/users/".concat(this.state.user.username);
-      axios.get(url).then((res) => {
+    axios
+      .get(`http://tickets/users/${this.state.user.username}`)
+      .then((res) => {
         if (res.data.error) {
           this.setState({ usernameMessage: res.data.text });
           this.setState({
@@ -44,47 +45,95 @@ export default class Register extends Component {
           });
         } else this.setState({ usernameMessage: res.data.text });
       });
-    }
   }
 
   formIsValid() {
     const errors = {};
-
     if (!this.state.user.username) errors.username = "Username is required";
     if (!this.state.user.password) errors.password = "Password is required";
     if (this.state.user.password !== this.state.user.passwordValid)
       errors.passwordValid = "Passwords do not match";
     if (!this.state.user.name) errors.name = "Name is required";
 
-    this.setState(errors);
+    this.setState({ errors });
     // Form is valid if the errors object has no properties
     return Object.keys(errors).length === 0;
   }
 
   handleChange(e) {
-    this.setState({
-      user: { ...this.state.user, [e.target.name]: e.target.value },
-    });
+    axios
+      .post("http://tickets/checks/input", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          user: { ...this.state.user, [e.target.name]: res.data.text },
+        });
+      });
+  }
+
+  onUsernameChange(e) {
+    axios
+      .post("http://tickets/checks/username", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          user: { ...this.state.user, username: res.data.text },
+        });
+      });
+  }
+
+  onPasswordChange(e) {
+    axios
+      .post("http://tickets/checks/password", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          user: { ...this.state.user, password: res.data.text },
+        });
+      });
+  }
+
+  onPasswordValidateChange(e) {
+    axios
+      .post("http://tickets/checks/password", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          user: { ...this.state.user, passwordValid: res.data.text },
+        });
+      });
   }
 
   handleSubmit(e) {
     e.preventDefault();
-    if (!this.formIsValid()) return;
-    addUser(this.state.user);
-    this.setState({
-      user: {
-        username: "",
-        password: "",
-        passwordValid: "",
-        name: "",
-        role: "user",
-      },
+    if (!this.formIsValid()) {
+      return;
+    }
+    addUser(this.state.user).then((data) => {
+      if (data.error) {
+        this.setState({ message: data.error });
+      } else {
+        this.setState({
+          user: {
+            username: "",
+            password: "",
+            passwordValid: "",
+            name: "",
+            role: "user",
+          },
+        });
+        this.setState({ message: data.text });
+      }
     });
-    this.setState({ message: "User Registered" });
   }
 
+  handleButton() {
+    this.setState({ counter: this.state.counter + 1 });
+    if (this.state.counter >= 5) {
+      this.setState({
+        message: [`clicked ${this.state.counter} times. Button disabled.`],
+        disabled: true,
+      });
+    }
+  }
   render() {
-    const { user, errors, message, usernameMessage } = this.state;
+    const { user, errors, message, usernameMessage, disabled } = this.state;
     const { userDetails } = this.props;
     if (userDetails.user_id) {
       return <Redirect to="/" />;
@@ -106,7 +155,7 @@ export default class Register extends Component {
                     placeholder="Enter Username"
                     name="username"
                     id="username"
-                    onChange={this.handleChange}
+                    onChange={this.onUsernameChange}
                     value={user.username}
                   />
                   {errors.username && (
@@ -137,7 +186,7 @@ export default class Register extends Component {
                     placeholder="Enter Password"
                     name="password"
                     id="password"
-                    onChange={this.handleChange}
+                    onChange={this.onPasswordChange}
                     value={user.password}
                   />
                   {errors.password && (
@@ -159,7 +208,7 @@ export default class Register extends Component {
                     placeholder="Enter Again"
                     name="passwordValid"
                     id="passwordValid"
-                    onChange={this.handleChange}
+                    onChange={this.onPasswordValidateChange}
                     value={user.passwordValid}
                   />
                   {errors.passwordValid && (
@@ -192,9 +241,15 @@ export default class Register extends Component {
                     type="submit"
                     value="Register"
                     className="btn btn-outline-primary"
+                    onClick={this.handleButton}
+                    disabled={disabled}
                   />
                   {message && (
-                    <div className="text-success text-center">{message}</div>
+                    <div className="text-success text-center">
+                      {message.map((m) => {
+                        return <p key={m}>{m}</p>;
+                      })}
+                    </div>
                   )}
                 </div>
               </div>

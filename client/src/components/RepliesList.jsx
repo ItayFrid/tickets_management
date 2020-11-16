@@ -72,7 +72,7 @@ export default class RepliesList extends Component {
     return (
       <div>
         {replies.length === 0
-          ? "No Comments"
+          ? "No Replies"
           : replies.map((reply) => (
               <Reply key={reply.reply_id} reply={reply} />
             ))}

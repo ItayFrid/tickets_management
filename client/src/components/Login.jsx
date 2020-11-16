@@ -13,30 +13,54 @@ export default class Login extends Component {
     this.state = {
       isLoggedIn: false,
       errors: {},
-      username: "",
-      password: "",
-      role: "",
-      userDetails: {},
+      user: { username: "", password: "" },
+      message: "",
+      counter: 1,
+      disabled: false,
     };
     this.formIsValid = this.formIsValid.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleButton = this.handleButton.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.onUsernameChange = this.onUsernameChange.bind(this);
+  }
+  onUsernameChange(e) {
+    axios
+      .post("http://tickets/checks/username", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          user: { ...this.state.user, username: res.data.text },
+        });
+      });
+  }
+  handleChange(e) {
+    axios
+      .post("http://tickets/checks/password", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          user: { ...this.state.user, [e.target.name]: res.data.text },
+        });
+      });
+    // this.setState({
+    //   user: { ...this.state.user, [e.target.name]: e.target.value },
+    // });
   }
 
   formIsValid() {
     const _errors = {};
-    if (!this.state.username) _errors.username = "Username is required";
-    if (!this.state.password) _errors.password = "Password is required";
+    if (!this.state.user.username) _errors.username = "Username is required";
+    if (!this.state.user.password) _errors.password = "Password is required";
     this.setState({ errors: _errors });
     // Form is valid if the errors object has no properties
     return Object.keys(_errors).length === 0;
   }
 
-  async handleSubmit(event) {
+  handleSubmit(event) {
     event.preventDefault();
     if (!this.formIsValid()) return;
     else {
-      let username = this.state.username;
-      let password = this.state.password;
+      const username = this.state.user.username;
+      const password = this.state.user.password;
       axios
         .post("http://tickets/users/login", {
           username,
@@ -53,10 +77,25 @@ export default class Login extends Component {
     }
   }
 
+  handleButton() {
+    this.setState({ counter: this.state.counter + 1 });
+    this.setState({
+      message: `attemp ${this.state.counter} of 3.`,
+    });
+    if (this.state.counter >= 3) {
+      this.setState({
+        message: `attemp ${this.state.counter} of 3. Button disabled.`,
+        disabled: true,
+      });
+    }
+  }
   render() {
-    const { username, password } = this.state;
-    if (this.state.isLoggedIn) {
-      return <Redirect to="/" />;
+    const { user, disabled } = this.state;
+    if (this.props.userDetails.role === "user") {
+      return <Redirect to="/tickets" />;
+    }
+    if (this.props.userDetails.role === "support") {
+      return <Redirect to="/support" />;
     }
     return (
       <div className="container">
@@ -70,11 +109,11 @@ export default class Login extends Component {
               </label>
               <div className="col-sm-5">
                 <input
-                  value={username}
                   className="form-control"
-                  onChange={(e) => {
-                    this.setState({ username: e.target.value });
-                  }}
+                  onChange={this.onUsernameChange}
+                  name="username"
+                  id="username"
+                  value={user.username}
                   type="text"
                   placeholder="username"
                 />
@@ -94,10 +133,10 @@ export default class Login extends Component {
                   type="password"
                   className="form-control"
                   placeholder="Enter Password"
-                  value={password}
-                  onChange={(e) => {
-                    this.setState({ password: e.target.value });
-                  }}
+                  value={user.password}
+                  name="password"
+                  id="password"
+                  onChange={this.handleChange}
                 />
                 {this.state.errors.password && (
                   <div className="text-danger">
@@ -113,6 +152,8 @@ export default class Login extends Component {
                   type="submit"
                   value="Login"
                   className="btn btn-outline-success"
+                  onClick={this.handleButton}
+                  disabled={disabled}
                 />
                 {this.state.errors.loginFailed && (
                   <div className="text-danger my-1">
@@ -120,6 +161,7 @@ export default class Login extends Component {
                   </div>
                 )}
               </div>
+              {this.state.message}
             </div>
           </form>
         </div>
