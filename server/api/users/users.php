@@ -5,33 +5,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 include 'Middleware.php';
 
-$app->group('/users', function () {
-    $this->get('', function(Request $req, Response $res, array $args) : Response {
-        return getAllUsers($req, $res);
-    });
-    $this->post('/details', function(Request $req, Response $res, array $args) : Response {
-        return getUserDetail($req, $res);
-    });
-    $this->post('/login', function(Request $req, Response $res, array $args) : Response {
-        return loginUser($req, $res);
-    })->add(new XssMiddleware());
-    $this->post('/logout', function(Request $req, Response $res, array $args) : Response {
-        return logoutUser($req, $res);
-    })->add(new XssMiddleware());
-    $this->post('/add', function(Request $req, Response $res, array $args) : Response {
-        return postUser($req, $res);
-    });
-    $this->put('/update/{user_id}', function(Request $req, Response $res, array $args) : Response {
-        return updateUser($req, $res, $args['user_id']);
-    });
-    $this->delete('/delete/{user_id}', function(Request $req, Response $res, array $args) : Response {
-        return deleteUser($req, $res, $args['user_id']);
-    });
-    $this->get('/{username}', function(Request $req, Response $res, array $args) : Response {
-        return checkUsername($req, $res, $args['username']);
-    });
-});
-
 /**
  * this function returns all users
  * @param Request $request
@@ -248,9 +221,8 @@ function validateUser($username, $password, $name, $role) : Array {
     if (!(strlen($name) >= 3 && strlen($name) <= 20 )) {
         $errors[] = "name must be between 3 to 20 length.";
     }
-    if (substr_count($name, ' ') != 1) {
-        $errors[] = "Name must contain 1 space only.";
+    if (!preg_match("/^([\w]{3,})+\s+([\w\s]{3,})+$/i",$name)) {
+        $errors[] = "Name must be valid.";
     }
-    if (preg_match("/^(?![\s.]+$)[a-zA-Z\s.]/"))
     return $errors;
 }

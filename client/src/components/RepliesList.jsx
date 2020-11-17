@@ -83,7 +83,7 @@ export default class RepliesList extends Component {
               name="body"
               placeholder="Enter reply"
               value={reply.body}
-              className="form-control"
+              className="form-control mr-1"
               onChange={this.handleChange}
             />
             <button

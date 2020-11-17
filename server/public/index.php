@@ -16,9 +16,9 @@ $app->add(function ($req, $res, $next) {
 });
 
 // Routes
-require '../src/routes/tickets.php';
-require '../src/routes/users.php';
-require '../src/routes/categories.php';
-require '../src/routes/replies.php';
-require '../src/routes/routine.php';
+require '../api/tickets/routes.php';
+require '../api/users/routes.php';
+require '../api/categories/routes.php';
+require '../api/replies/routes.php';
+require '../api/routine/routes.php';
 $app->run();
