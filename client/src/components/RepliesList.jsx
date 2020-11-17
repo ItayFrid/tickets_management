@@ -36,9 +36,13 @@ export default class RepliesList extends Component {
   }
 
   handleChange = (e) => {
-    let reply = this.state.reply;
-    reply.body = e.target.value;
-    this.setState({ reply });
+    axios
+      .post("http://tickets/checks/input", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          reply: { ...this.state.reply, body: res.data.text },
+        });
+      });
   };
 
   handleSubmit = (event) => {

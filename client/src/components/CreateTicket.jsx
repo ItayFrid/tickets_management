@@ -3,6 +3,7 @@ import { Redirect } from "react-router-dom";
 import categoryStore from "../stores/categoryStore";
 import { addTicket } from "../actions/ticketAction";
 import { getCategories } from "../actions/categoryAction";
+import axios from "axios";
 
 export default class CreateTicket extends Component {
   constructor(props) {
@@ -43,8 +44,12 @@ export default class CreateTicket extends Component {
 
   handleChange(e) {
     let ticket = this.state.ticket;
-    ticket[e.target.name] = e.target.value;
-    this.setState({ ticket });
+    axios
+      .post("http://tickets/checks/input", { text: e.target.value })
+      .then((res) => {
+        ticket[e.target.name] = res.data.text;
+        this.setState({ ticket });
+      });
   }
 
   formIsValid() {

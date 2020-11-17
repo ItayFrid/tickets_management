@@ -3,6 +3,7 @@ import { Redirect } from "react-router-dom";
 import categoryStore from "../stores/categoryStore";
 import { getCategories, addCategory } from "../actions/categoryAction";
 import CategoryItem from "./CategoryItem";
+import axios from "axios";
 
 export default class CategoriesPage extends Component {
   constructor(props) {
@@ -37,7 +38,13 @@ export default class CategoriesPage extends Component {
   }
 
   handleChange(e) {
-    this.setState({ category: { category_id: null, name: e.target.value } });
+    axios
+      .post("http://tickets/checks/input", { text: e.target.value })
+      .then((res) => {
+        this.setState({
+          category: { ...this.state.category, name: res.data.text },
+        });
+      });
   }
 
   formIsValid() {
