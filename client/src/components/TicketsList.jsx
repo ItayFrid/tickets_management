@@ -16,9 +16,13 @@ export default class TicketsList extends Component {
 
   componentDidMount() {
     ticketStore.addChangeListener(this.onTicketChange);
-    if (ticketStore.getTickets().length === 0)
+    if (ticketStore.getTickets().length === 0) {
       getUserTickets(this.props.userDetails.user_id);
-    return () => ticketStore.removeChangeListener(this.onTicketChange);
+    }
+  }
+
+  componentWillUnmount() {
+    ticketStore.removeChangeListener(this.onTicketChange);
   }
 
   onTicketChange() {

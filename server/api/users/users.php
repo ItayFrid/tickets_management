@@ -60,7 +60,8 @@ function loginUser(Request $request, Response $response) : Response {
     $username = strval($data['username'] ?? "");
     $password = strval($data['password'] ?? "");
     $sql = "SELECT user_id, username, password, name, role FROM users WHERE username='$username'";
-    
+    $user=[];
+
     try {
         $db = new db();
         $db = $db->connect();
@@ -160,7 +161,7 @@ function updateUser(Request $request, Response $response, $user_id) : Response {
  * @param int $user_id
  * @return Response
  */
-function deleteUser(Request $request, Response $response, $user_id) : Response {
+function deleteUser(Request $request, Response $response,int $user_id) : Response {
     $sql = "DELETE FROM users WHERE user_id = ?";
 
     try{
@@ -197,9 +198,9 @@ function checkUsername(Request $request, Response $response, $username) : Respon
     }
     if(count($user) !== 0){
         return $response->withJson(["text" => "username is taken"]);
-    } else {
-        return $response->withJson(["text" => "username is available"]);
     }
+
+    return $response->withJson(["text" => "username is available"]);  
 }
 function logoutUser(Request $request, Response $response): Response {
     $data = $request->getParsedBody();
@@ -221,7 +222,7 @@ function validateUser($username, $password, $name, $role) : Array {
     if (!(strlen($name) >= 3 && strlen($name) <= 20 )) {
         $errors[] = "name must be between 3 to 20 length.";
     }
-    if (!preg_match("/^([\w]{3,})+\s+([\w\s]{3,})+$/i",$name)) {
+    if (!preg_match("/^([\w]{3,})+\s+([\w\s]{3,})+$/i", $name)) {
         $errors[] = "Name must be valid.";
     }
     return $errors;

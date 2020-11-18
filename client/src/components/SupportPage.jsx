@@ -15,8 +15,13 @@ export default class SupportPage extends Component {
 
   componentDidMount() {
     ticketStore.addChangeListener(this.onTicketChange);
-    if (ticketStore.getTickets().length === 0) getTickets();
-    return () => ticketStore.removeChangeListener(this.onTicketChange);
+    if (ticketStore.getTickets().length === 0) {
+      getTickets();
+    }
+  }
+
+  componentWillUnmount() {
+    ticketStore.removeChangeListener(this.onTicketChange);
   }
 
   onTicketChange() {

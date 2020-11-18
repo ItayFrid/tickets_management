@@ -2,9 +2,9 @@
 
 class db{
     private string $dbhost='localhost';
-    private $dbuser='root';
-    private $dbpass='';
-    private $dbname='tickets_m';
+    private string $dbuser='root';
+    private string $dbpass='';
+    private string $dbname='tickets_m';
     
     public function connect() : PDO{
         $mysql_connect_str = "mysql:host=$this->dbhost;dbname=$this->dbname;";
@@ -13,4 +13,12 @@ class db{
         return $dbConnection;
     }
 }
+
+// function pod(): PDO {
+//     static $db;
+//     if(empty($db)) {
+//         $db = new db();
+//     } 
+//     return $db;
+// }
 ?>

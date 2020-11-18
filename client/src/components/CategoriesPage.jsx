@@ -22,8 +22,13 @@ export default class CategoriesPage extends Component {
 
   componentDidMount() {
     categoryStore.addChangeListener(this.onCategoryChange);
-    if (categoryStore.getCategories().length === 0) getCategories();
-    return () => categoryStore.removeChangeListener(this.onCategoryChange);
+    if (categoryStore.getCategories().length === 0) {
+      getCategories();
+    }
+  }
+
+  componentWillUnmount() {
+    categoryStore.removeChangeListener(this.onCategoryChange);
   }
 
   onCategoryChange() {
@@ -31,8 +36,12 @@ export default class CategoriesPage extends Component {
   }
 
   handleSubmit(e) {
-    e.preventDefault();
-    if (!this.formIsValid()) return;
+    if (e !== null) {
+      e.preventDefault();
+    }
+    if (!this.formIsValid()) {
+      return;
+    }
     addCategory(this.state.category);
     this.setState({ category: { category_id: null, name: "" } });
   }
